@@ -1,8 +1,3 @@
-Here's a **README.md** file to introduce and guide users on how to use your
-**tmux configuration**:
-
----
-
 # My Custom Tmux Configuration
 
 This repository contains my custom **tmux configuration** that enhances
