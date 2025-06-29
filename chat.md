@@ -796,3 +796,135 @@ instead of enter, can i bind ""+y", which is what i'm used to doing in neovim?
 ```tmux
 bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "pbcopy"
 ```
+
+# === ASSISTANT ===
+
+Yes, you can absolutely bind `"+y` (or more precisely, `"` followed by `+`
+and then `y`) in `tmux` Copy Mode to mimic the behavior you're used to in
+Neovim, where `"+y` yanks (copies) to the system clipboard. In `tmux`, you can
+customize keybindings in Copy Mode to achieve this by binding a sequence or a
+specific key to copy the selected text to the system clipboard (using `pbcopy`
+on macOS, as in your example, or another clipboard tool on other systems).
+
+However, binding a multi-key sequence like `"+y` directly in `tmux` isn't
+natively supported as a single binding because `tmux` keybindings typically
+operate on single keys or simple combinations, not multi-character sequences with
+quotes. Instead, you can bind a single key or a simpler combination to perform
+the copy action, or approximate the Neovim behavior by binding `y` in Copy Mode
+to copy to the system clipboard.
+
+Below, I'll show you how to bind `y` in Copy Mode to copy the selected text to
+the system clipboard (using `pbcopy` for macOS as in your snippet), which is the
+closest and most practical way to mimic the `y` part of `"+y` from Neovim. If
+you specifically want the `"+` prefix, I'll explain the limitations and a
+possible workaround.
+
+### Binding `y` in Copy Mode to Copy to System Clipboard
+
+Since you're used to `y` for yanking in Neovim, let's bind `y` in `tmux` Copy
+Mode to copy the selected text and send it to the system clipboard. Add the
+following to your `~/.tmux.conf`:
+
+```tmux
+# Use vi mode for copy mode
+set-window-option -g mode-keys vi
+
+# Bind 'y' in copy mode to copy selection to system clipboard (macOS with pbcopy)
+bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "pbcopy"
+```
+
+### Explanation
+
+- `set-window-option -g mode-keys vi`: Ensures Copy Mode uses `vi`-style
+  keybindings, which aligns with Neovim's default behavior and makes `y` a
+  natural choice for yanking.
+- `bind-key -T copy-mode-vi y`: Binds the `y` key in Copy Mode (`copy-mode-vi`
+  table) to perform the copy action.
+- `send-keys -X copy-pipe-and-cancel "pbcopy"`: Copies the selected text to the
+  `tmux` clipboard and pipes it to `pbcopy`, which sends it to the macOS system
+  clipboard. The `-cancel` part exits Copy Mode after copying, mimicking the
+  behavior of `Enter` in the default setup.
+
+### Steps to Apply
+
+1. Add the above lines to your `~/.tmux.conf`.
+2. Reload your `tmux` configuration:
+   ```bash
+   tmux source-file ~/.tmux.conf
+   ```
+3. Test it:
+   - Enter Copy Mode with `Ctrl + b, [`.
+   - Navigate to the text you want to copy using arrow keys or `vi` motions
+     (`h`, `j`, `k`, `l`, etc.).
+   - Start selecting text with `Space`.
+   - Move the cursor to highlight the desired text.
+   - Press `y` to copy the selection to the system clipboard and exit Copy Mode.
+   - Paste outside `tmux` with `Cmd + v` (on macOS) to confirm it worked.
+
+### Limitations of Binding `"+y`
+
+`tmux` does not natively support binding multi-key sequences like `"+y` as a
+single action because its keybinding system is designed for single keys or
+prefix-modified keys (e.g., `Ctrl + key`). The `"` and `+` characters are not
+interpreted as part of a sequence in the same way Neovim handles them for
+register selection.
+
+- In Neovim, `"+y` means "yank to the `+` register (system clipboard)," and the
+  `"` initiates a register selection followed by `+` to specify the clipboard
+  register.
+- In `tmux`, there’s no direct concept of "registers" like in Vim/Neovim, so
+  `"+` doesn’t have a special meaning, and binding a sequence like this isn’t
+  straightforward.
+
+### Workaround for Approximating `"+y`
+
+If you really want to use a sequence similar to `"+y`, you can bind a simpler
+key combination (like `+` or a leader key followed by `y`) in Copy Mode to
+perform the copy-to-clipboard action. For example, bind `+` to copy to the
+system clipboard:
+
+```tmux
+# Bind '+' in copy mode to copy selection to system clipboard (macOS with pbcopy)
+bind-key -T copy-mode-vi + send-keys -X copy-pipe-and-cancel "pbcopy"
+```
+
+Now, in Copy Mode, after selecting text with `Space`, you can press `+` to copy
+to the system clipboard. It’s not exactly `"+y`, but it incorporates the `+` as
+a nod to the clipboard register in Neovim.
+
+Alternatively, if you want a two-key sequence, you could use a custom prefix
+within Copy Mode, but this requires more complex scripting or plugins and isn’t
+as seamless.
+
+### Additional Notes
+
+- **Clipboard Tool**: If you’re not on macOS, replace `pbcopy` with the
+  appropriate tool for your system:
+  - Linux: `xclip -selection clipboard` or `xsel --clipboard --input`
+  - Windows (WSL): `clip.exe`
+- **Default Behavior**: If you previously had `Enter` bound to copy (as in your
+  snippet), adding the `y` binding won’t conflict with it—you can use either.
+  If you want to unbind `Enter`, you can explicitly rebind it or leave it as is.
+- **Neovim Integration**: If you use `tmux` with Neovim and want clipboard
+  integration between them, ensure Neovim is configured to access the system
+  clipboard (e.g., with `set clipboard=unnamedplus` in your Neovim config) and
+  that `tmux` is set up to pipe to the same clipboard as shown above.
+- **Conflict Check**: If `y` or `+` is already bound to something else in your
+  `tmux` configuration, check with `tmux list-keys -T copy-mode-vi` to see
+  current bindings in Copy Mode.
+
+### Summary
+
+Binding `y` in Copy Mode to copy to the system clipboard is the closest and most
+practical way to mimic Neovim’s yanking behavior. Add
+`bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "pbcopy"` to your
+`~/.tmux.conf`, reload it, and you’ll be able to copy with `y` after selecting
+text. While `"+y` as a literal sequence isn’t directly supported, binding `y` or
+`+` achieves the desired functionality.
+
+Let me know if you’d like to explore a more complex workaround for multi-key
+sequences or if you have any other customizations in mind!
+
+# === USER ===
+
+
